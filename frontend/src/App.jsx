@@ -29,11 +29,12 @@ function App() {
     text: userText,
   }
 
-  setMessages((previousMessages) => [
-    ...previousMessages,
+  const updatedMessages = [
+    ...messages,
     userMessage,
-  ])
+  ]
 
+  setMessages(updatedMessages)
   setInput('')
 
   try {
@@ -43,7 +44,10 @@ function App() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: userText,
+        messages: updatedMessages.map((message) => ({
+          role: message.sender === 'user' ? 'user' : 'assistant',
+          content: message.text,
+        })),
       }),
     })
 
