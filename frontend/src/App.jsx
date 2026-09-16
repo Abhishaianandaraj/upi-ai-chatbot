@@ -18,22 +18,62 @@ function App() {
   'What are the UPI transaction limits?',
  ]
 
-  const handleSend = () => {
-    if (!input.trim()) return
+  const handleSend = async () => {
+  if (!input.trim()) return
 
-    const userMessage = {
-      id: Date.now(),
-      sender: 'user',
-      text: input,
+  const userText = input
+
+  const userMessage = {
+    id: Date.now(),
+    sender: 'user',
+    text: userText,
+  }
+
+  setMessages((previousMessages) => [
+    ...previousMessages,
+    userMessage,
+  ])
+
+  setInput('')
+
+  try {
+    const response = await fetch('http://localhost:5000/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: userText,
+      }),
+    })
+
+    const data = await response.json()
+
+    const botMessage = {
+      id: Date.now() + 1,
+      sender: 'bot',
+      text: data.reply,
     }
 
     setMessages((previousMessages) => [
       ...previousMessages,
-      userMessage,
+      botMessage,
     ])
+  } catch (error) {
+    console.error('Error communicating with backend:', error)
 
-    setInput('')
+    const errorMessage = {
+      id: Date.now() + 1,
+      sender: 'bot',
+      text: 'Sorry, I could not connect to the server.',
+    }
+
+    setMessages((previousMessages) => [
+      ...previousMessages,
+      errorMessage,
+    ])
   }
+}
 
   return (
     <div className="app">
