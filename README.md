@@ -4,6 +4,8 @@ AI-powered UPI customer support assistant.
 
 ## Live Demo
 
+![UPI Assist Demo](./images/demo-image.png)
+
 ### [UPI Assist](https://upi-ai-chatbot.vercel.app/) <-- Click this link for preview
 
 The application is deployed using:
