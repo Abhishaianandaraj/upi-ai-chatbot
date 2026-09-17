@@ -43,7 +43,7 @@ function App() {
       setIsLoading(true)
 
       const response = await fetch(
-        'http://localhost:5000/api/chat',
+        'https://upi-ai-chatbot.onrender.com/api/chat',
         {
           method: 'POST',
           headers: {

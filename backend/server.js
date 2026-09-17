@@ -137,14 +137,14 @@ app.post('/api/chat', async (req, res) => {
   }
 
   try {
-    // Step 1: Detect the user's intent
+    
     const intent = await detectIntent(messages)
 
-    // Step 2: Get guidance for the detected intent
+    
     const guidance =
       intentGuidance[intent] || intentGuidance.OTHER
 
-    // Step 3: Retrieve relevant knowledge
+    
     const latestMessage = messages[messages.length - 1].content
 
     const knowledge = retrieveKnowledge(
@@ -155,7 +155,7 @@ app.post('/api/chat', async (req, res) => {
     console.log('Detected intent:', intent)
     console.log('Retrieved knowledge:', knowledge)
 
-    // Step 4: Generate the final AI response
+   
     const response = await ai.models.generateContent({
       model: 'gemini-3.5-flash-lite',
 
