@@ -11,73 +11,88 @@ function App() {
   ])
 
   const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
   const quickActions = [
-  'My payment failed',
-  'My payment is pending',
-  'I have not received my refund',
-  'What are the UPI transaction limits?',
- ]
-
-  const handleSend = async () => {
-  if (!input.trim()) return
-
-  const userText = input
-
-  const userMessage = {
-    id: Date.now(),
-    sender: 'user',
-    text: userText,
-  }
-
-  const updatedMessages = [
-    ...messages,
-    userMessage,
+    'My payment failed',
+    'My payment is pending',
+    'I have not received my refund',
+    'What are the UPI transaction limits?',
   ]
 
-  setMessages(updatedMessages)
-  setInput('')
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return
 
-  try {
-    const response = await fetch('http://localhost:5000/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messages: updatedMessages.map((message) => ({
-          role: message.sender === 'user' ? 'user' : 'assistant',
-          content: message.text,
-        })),
-      }),
-    })
+    const userText = input
 
-    const data = await response.json()
-
-    const botMessage = {
-      id: Date.now() + 1,
-      sender: 'bot',
-      text: data.reply,
+    const userMessage = {
+      id: Date.now(),
+      sender: 'user',
+      text: userText,
     }
 
-    setMessages((previousMessages) => [
-      ...previousMessages,
-      botMessage,
-    ])
-  } catch (error) {
-    console.error('Error communicating with backend:', error)
+    const updatedMessages = [
+      ...messages,
+      userMessage,
+    ]
 
-    const errorMessage = {
-      id: Date.now() + 1,
-      sender: 'bot',
-      text: 'Sorry, I could not connect to the server.',
+    setMessages(updatedMessages)
+    setInput('')
+
+    try {
+      setIsLoading(true)
+
+      const response = await fetch(
+        'http://localhost:5000/api/chat',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: updatedMessages.map((message) => ({
+              role:
+                message.sender === 'user'
+                  ? 'user'
+                  : 'assistant',
+              content: message.text,
+            })),
+          }),
+        }
+      )
+
+      const data = await response.json()
+
+      const botMessage = {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: data.reply,
+      }
+
+      setMessages((previousMessages) => [
+        ...previousMessages,
+        botMessage,
+      ])
+    } catch (error) {
+      console.error(
+        'Error communicating with backend:',
+        error
+      )
+
+      const errorMessage = {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: 'Sorry, I could not connect to the server.',
+      }
+
+      setMessages((previousMessages) => [
+        ...previousMessages,
+        errorMessage,
+      ])
+    } finally {
+      setIsLoading(false)
     }
-
-    setMessages((previousMessages) => [
-      ...previousMessages,
-      errorMessage,
-    ])
   }
-}
 
   return (
     <div className="app">
@@ -90,21 +105,21 @@ function App() {
 
       <main className="chat-container">
         <div className="quick-actions">
-  <p>How can I help?</p>
+          <p>How can I help?</p>
 
-      <div className="quick-action-buttons">
-        {quickActions.map((action) => (
-          <button
-            key={action}
-            onClick={() => {
-              setInput(action)
-            }}
-          >
-            {action}
-          </button>
-        ))}
-      </div>
-    </div>
+          <div className="quick-action-buttons">
+            {quickActions.map((action) => (
+              <button
+                key={action}
+                onClick={() => setInput(action)}
+                disabled={isLoading}
+              >
+                {action}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="messages">
           {messages.map((message) => (
             <div
@@ -116,6 +131,14 @@ function App() {
               </div>
             </div>
           ))}
+
+          {isLoading && (
+            <div className="message bot">
+              <div className="message-bubble">
+                Thinking...
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="input-container">
@@ -123,16 +146,22 @@ function App() {
             type="text"
             placeholder="Ask about your UPI transaction..."
             value={input}
-            onChange={(event) => setInput(event.target.value)}
+            onChange={(event) =>
+              setInput(event.target.value)
+            }
             onKeyDown={(event) => {
               if (event.key === 'Enter') {
                 handleSend()
               }
             }}
+            disabled={isLoading}
           />
 
-          <button onClick={handleSend}>
-            Send
+          <button
+            onClick={handleSend}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Sending...' : 'Send'}
           </button>
         </div>
       </main>
